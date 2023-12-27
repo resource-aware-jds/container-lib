@@ -6,6 +6,7 @@ package di
 import (
 	"github.com/google/wire"
 	configDI "github.com/resource-aware-jds/worker-lib/config/di"
+	handlerDI "github.com/resource-aware-jds/worker-lib/handler/di"
 	pkgDI "github.com/resource-aware-jds/worker-lib/pkg/di"
 )
 
@@ -17,6 +18,7 @@ func InitializeApplication() (App, func(), error) {
 			ProvideApp,
 			configDI.ConfigWireSet,
 			pkgDI.PKGWireSet,
+			handlerDI.HandlerWireSet,
 		),
 	)
 }

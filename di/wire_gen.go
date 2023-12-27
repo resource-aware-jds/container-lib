@@ -8,6 +8,7 @@ package di
 
 import (
 	"github.com/resource-aware-jds/worker-lib/config"
+	"github.com/resource-aware-jds/worker-lib/handler"
 	"github.com/resource-aware-jds/worker-lib/pkg/grpc"
 )
 
@@ -23,7 +24,8 @@ func InitializeApplication() (App, func(), error) {
 	if err != nil {
 		return App{}, nil, err
 	}
-	app := ProvideApp(socketServer)
+	grpcHandler := handler.ProvideGRPCHandler(socketServer)
+	app := ProvideApp(socketServer, grpcHandler)
 	return app, func() {
 		cleanup()
 	}, nil

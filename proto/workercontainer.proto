@@ -1,0 +1,13 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+option go_package = "github.com/resource-aware-jds/worker-lib/generated/proto";
+
+package WorkerContainer;
+
+service WorkerContainer {
+  rpc SendTask(Task) returns (google.protobuf.Empty) {}
+}
+
+message Task {
+  string ID = 1;
+}
