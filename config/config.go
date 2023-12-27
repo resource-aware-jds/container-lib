@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/resource-aware-jds/worker-lib/pkg/grpc"
 	"github.com/sirupsen/logrus"
 	"os"
 )
@@ -28,4 +29,10 @@ func ProvideConfig() (*Config, error) {
 	envconfig.MustProcess("RAJDS", &config)
 
 	return &config, nil
+}
+
+func ProvideGRPCSocketServerConfig(config *Config) grpc.ServerConfig {
+	return grpc.ServerConfig{
+		UnixSocketPath: config.WorkerNodeUnixSocketPath,
+	}
 }
