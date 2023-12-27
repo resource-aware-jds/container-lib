@@ -10,4 +10,5 @@ service WorkerContainer {
 
 message Task {
   string ID = 1;
+  bytes TaskAttributes = 2;
 }

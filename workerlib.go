@@ -2,12 +2,10 @@ package workerlib
 
 import (
 	"github.com/resource-aware-jds/worker-lib/di"
-	"github.com/resource-aware-jds/worker-lib/pkg/workerlibcontext"
+	"github.com/resource-aware-jds/worker-lib/model"
 )
 
-type WorkerHandlerFunc func(ctx workerlibcontext.Context)
-
-func Run(workerHandlerFunc WorkerHandlerFunc) {
+func Run(workerHandlerFunc model.WorkerHandlerFunc) {
 	app, cleanup, err := di.InitializeApplication()
 	if err != nil {
 		cleanup()
