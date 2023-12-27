@@ -6,7 +6,7 @@ import (
 )
 
 func Run(workerHandlerFunc model.WorkerHandlerFunc) {
-	app, cleanup, err := di.InitializeApplication()
+	app, cleanup, err := di.InitializeApplication(workerHandlerFunc)
 	if err != nil {
 		cleanup()
 		panic(err)
