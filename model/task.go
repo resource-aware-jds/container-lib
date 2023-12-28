@@ -1,8 +1,13 @@
 package model
 
 type Task struct {
-	ID         string
+	ID         TaskID
 	Attributes TaskAttributes
 }
 
 type TaskAttributes []byte
+
+type TaskID struct {
+	JobID  string
+	TaskID string
+}

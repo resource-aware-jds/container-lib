@@ -1,6 +1,9 @@
 package workerpool
 
-import "github.com/resource-aware-jds/worker-lib/model"
+import (
+	"context"
+	"github.com/resource-aware-jds/worker-lib/model"
+)
 
 type worker struct {
 	id     string
@@ -9,7 +12,7 @@ type worker struct {
 
 type Worker interface {
 	GetID() string
-	Run(handlerFunc model.WorkerHandlerFunc) error
+	Run(ctx context.Context, handlerFunc model.WorkerHandlerFunc) error
 }
 
 func ProvideWorker(id string) Worker {
@@ -22,7 +25,8 @@ func (w worker) GetID() string {
 	return w.id
 }
 
-func (w worker) Run(handlerFunc model.WorkerHandlerFunc) error {
+func (w worker) Run(ctx context.Context, handlerFunc model.WorkerHandlerFunc) error {
+
 	//TODO implement me
 	panic("implement me")
 }
