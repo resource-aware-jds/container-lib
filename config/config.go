@@ -9,7 +9,7 @@ import (
 )
 
 type Config struct {
-	WorkerNodeUnixSocketPath string `envconfig:"WORKER_NODE_UNIX_SOCKET_PATH"`
+	UnixSocketPath string `envconfig:"UNIX_SOCKET_PATH"`
 }
 
 func ProvideConfig() (*Config, error) {
@@ -33,6 +33,6 @@ func ProvideConfig() (*Config, error) {
 
 func ProvideGRPCSocketServerConfig(config *Config) grpc.ServerConfig {
 	return grpc.ServerConfig{
-		UnixSocketPath: config.WorkerNodeUnixSocketPath,
+		UnixSocketPath: config.UnixSocketPath,
 	}
 }
