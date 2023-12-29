@@ -1,4 +1,4 @@
-package workerpool
+package runnerpool
 
 import (
 	"fmt"
@@ -10,41 +10,41 @@ import (
 type PoolEvent any
 
 type pool struct {
-	workerQueue datastructure.Queue[*Worker]
+	runnerQueue datastructure.Queue[*Runner]
 	subscribers []observer.Subscriber[PoolEvent]
 }
 
 type Pool interface {
 	observer.Publisher[PoolEvent]
 
-	IsAvailableWorker() bool
-	RequesterWorker() (*Worker, error)
-	ReturnWorker(*Worker)
+	IsAvailableRunner() bool
+	RequestRunner() (*Runner, error)
+	ReturnRunner(*Runner)
 }
 
-func ProvideWorkerPool(numberOfWorker int) (Pool, error) {
-	workerQueue := datastructure.ProvideQueue[*Worker](numberOfWorker)
+func ProvideRunnerPool(numberOfWorker int) (Pool, error) {
+	runnerQueue := datastructure.ProvideQueue[*Runner](numberOfWorker)
 
 	for i := 0; i < numberOfWorker; i++ {
-		createdWorker := ProvideWorker(strconv.Itoa(i))
-		workerQueue.Push(&createdWorker)
+		createdWorker := ProvideRunner(strconv.Itoa(i))
+		runnerQueue.Push(&createdWorker)
 	}
 
 	return &pool{
-		workerQueue: workerQueue,
+		runnerQueue: runnerQueue,
 	}, nil
 }
 
-func (p *pool) IsAvailableWorker() bool {
-	return !p.workerQueue.Empty()
+func (p *pool) IsAvailableRunner() bool {
+	return !p.runnerQueue.Empty()
 }
 
-func (p *pool) RequesterWorker() (*Worker, error) {
-	if !p.IsAvailableWorker() {
+func (p *pool) RequestRunner() (*Runner, error) {
+	if !p.IsAvailableRunner() {
 		return nil, fmt.Errorf("no available worker")
 	}
 
-	poppedWorker, ok := p.workerQueue.Pop()
+	poppedWorker, ok := p.runnerQueue.Pop()
 	if !ok {
 		return nil, fmt.Errorf("failed to get worker")
 	}
@@ -52,8 +52,8 @@ func (p *pool) RequesterWorker() (*Worker, error) {
 	return *poppedWorker, nil
 }
 
-func (p *pool) ReturnWorker(w *Worker) {
-	p.workerQueue.Push(w)
+func (p *pool) ReturnRunner(w *Runner) {
+	p.runnerQueue.Push(w)
 }
 
 func (p *pool) Subscribe(subscriber observer.Subscriber[PoolEvent]) {
