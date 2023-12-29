@@ -1,0 +1,9 @@
+syntax = "proto3";
+package Common;
+
+option go_package = "github.com/resource-aware-jds/container-lib/generated/proto";
+
+message Task {
+  string ID = 1;
+  bytes TaskAttributes = 2;
+}

@@ -8,7 +8,7 @@ import (
 )
 
 type GRPCHandler struct {
-	proto.UnimplementedContainerTaskRunnerServer
+	proto.UnimplementedContainerReceiverServer
 	containerHandlerFunction facade.ContainerHandlerFunction
 }
 
@@ -20,7 +20,7 @@ func ProvideGRPCHandler(grpcServer grpc.SocketServer, containerHandlerFunction f
 	if containerHandlerFunction == nil {
 		return handler, fmt.Errorf("container handler function can't be nil")
 	}
-	proto.RegisterContainerTaskRunnerServer(grpcServer.GetGRPCServer(), handler)
+	proto.RegisterContainerReceiverServer(grpcServer.GetGRPCServer(), handler)
 	return handler, nil
 }
 

@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v4.25.1
-// source: proto/container.proto
+// source: container.proto
 
 package proto
 
@@ -19,88 +19,88 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// ContainerTaskRunnerClient is the client API for ContainerTaskRunner service.
+// ContainerReceiverClient is the client API for ContainerReceiver service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type ContainerTaskRunnerClient interface {
-	SendTask(ctx context.Context, in *Task, opts ...grpc.CallOption) (*emptypb.Empty, error)
+type ContainerReceiverClient interface {
+	CancelTask(ctx context.Context, in *CancelTaskRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
-type containerTaskRunnerClient struct {
+type containerReceiverClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewContainerTaskRunnerClient(cc grpc.ClientConnInterface) ContainerTaskRunnerClient {
-	return &containerTaskRunnerClient{cc}
+func NewContainerReceiverClient(cc grpc.ClientConnInterface) ContainerReceiverClient {
+	return &containerReceiverClient{cc}
 }
 
-func (c *containerTaskRunnerClient) SendTask(ctx context.Context, in *Task, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *containerReceiverClient) CancelTask(ctx context.Context, in *CancelTaskRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/Container.ContainerTaskRunner/SendTask", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/Container.ContainerReceiver/CancelTask", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// ContainerTaskRunnerServer is the server API for ContainerTaskRunner service.
-// All implementations must embed UnimplementedContainerTaskRunnerServer
+// ContainerReceiverServer is the server API for ContainerReceiver service.
+// All implementations must embed UnimplementedContainerReceiverServer
 // for forward compatibility
-type ContainerTaskRunnerServer interface {
-	SendTask(context.Context, *Task) (*emptypb.Empty, error)
-	mustEmbedUnimplementedContainerTaskRunnerServer()
+type ContainerReceiverServer interface {
+	CancelTask(context.Context, *CancelTaskRequest) (*emptypb.Empty, error)
+	mustEmbedUnimplementedContainerReceiverServer()
 }
 
-// UnimplementedContainerTaskRunnerServer must be embedded to have forward compatible implementations.
-type UnimplementedContainerTaskRunnerServer struct {
+// UnimplementedContainerReceiverServer must be embedded to have forward compatible implementations.
+type UnimplementedContainerReceiverServer struct {
 }
 
-func (UnimplementedContainerTaskRunnerServer) SendTask(context.Context, *Task) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SendTask not implemented")
+func (UnimplementedContainerReceiverServer) CancelTask(context.Context, *CancelTaskRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CancelTask not implemented")
 }
-func (UnimplementedContainerTaskRunnerServer) mustEmbedUnimplementedContainerTaskRunnerServer() {}
+func (UnimplementedContainerReceiverServer) mustEmbedUnimplementedContainerReceiverServer() {}
 
-// UnsafeContainerTaskRunnerServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to ContainerTaskRunnerServer will
+// UnsafeContainerReceiverServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ContainerReceiverServer will
 // result in compilation errors.
-type UnsafeContainerTaskRunnerServer interface {
-	mustEmbedUnimplementedContainerTaskRunnerServer()
+type UnsafeContainerReceiverServer interface {
+	mustEmbedUnimplementedContainerReceiverServer()
 }
 
-func RegisterContainerTaskRunnerServer(s grpc.ServiceRegistrar, srv ContainerTaskRunnerServer) {
-	s.RegisterService(&ContainerTaskRunner_ServiceDesc, srv)
+func RegisterContainerReceiverServer(s grpc.ServiceRegistrar, srv ContainerReceiverServer) {
+	s.RegisterService(&ContainerReceiver_ServiceDesc, srv)
 }
 
-func _ContainerTaskRunner_SendTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Task)
+func _ContainerReceiver_CancelTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CancelTaskRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ContainerTaskRunnerServer).SendTask(ctx, in)
+		return srv.(ContainerReceiverServer).CancelTask(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/Container.ContainerTaskRunner/SendTask",
+		FullMethod: "/Container.ContainerReceiver/CancelTask",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ContainerTaskRunnerServer).SendTask(ctx, req.(*Task))
+		return srv.(ContainerReceiverServer).CancelTask(ctx, req.(*CancelTaskRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// ContainerTaskRunner_ServiceDesc is the grpc.ServiceDesc for ContainerTaskRunner service.
+// ContainerReceiver_ServiceDesc is the grpc.ServiceDesc for ContainerReceiver service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var ContainerTaskRunner_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "Container.ContainerTaskRunner",
-	HandlerType: (*ContainerTaskRunnerServer)(nil),
+var ContainerReceiver_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "Container.ContainerReceiver",
+	HandlerType: (*ContainerReceiverServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "SendTask",
-			Handler:    _ContainerTaskRunner_SendTask_Handler,
+			MethodName: "CancelTask",
+			Handler:    _ContainerReceiver_CancelTask_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/container.proto",
+	Metadata: "container.proto",
 }
