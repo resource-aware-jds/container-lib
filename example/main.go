@@ -1,7 +1,7 @@
 package main
 
 import (
-	workerlib "github.com/resource-aware-jds/worker-lib"
+	workerlib "github.com/resource-aware-jds/container-lib"
 	"time"
 )
 

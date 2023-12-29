@@ -2,13 +2,13 @@ package handler
 
 import (
 	"fmt"
-	"github.com/resource-aware-jds/worker-lib/facade"
-	"github.com/resource-aware-jds/worker-lib/generated/proto/github.com/resource-aware-jds/worker-lib/generated/proto"
-	"github.com/resource-aware-jds/worker-lib/pkg/grpc"
+	"github.com/resource-aware-jds/container-lib/facade"
+	"github.com/resource-aware-jds/container-lib/generated/proto/github.com/resource-aware-jds/container-lib/generated/proto"
+	"github.com/resource-aware-jds/container-lib/pkg/grpc"
 )
 
 type GRPCHandler struct {
-	proto.UnimplementedWorkerContainerServer
+	proto.UnimplementedContainerTaskRunnerServer
 	containerHandlerFunction facade.ContainerHandlerFunction
 }
 
@@ -20,7 +20,7 @@ func ProvideGRPCHandler(grpcServer grpc.SocketServer, containerHandlerFunction f
 	if containerHandlerFunction == nil {
 		return handler, fmt.Errorf("container handler function can't be nil")
 	}
-	proto.RegisterWorkerContainerServer(grpcServer.GetGRPCServer(), handler)
+	proto.RegisterContainerTaskRunnerServer(grpcServer.GetGRPCServer(), handler)
 	return handler, nil
 }
 

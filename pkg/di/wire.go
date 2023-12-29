@@ -2,7 +2,7 @@ package di
 
 import (
 	"github.com/google/wire"
-	"github.com/resource-aware-jds/worker-lib/pkg/grpc"
+	"github.com/resource-aware-jds/container-lib/pkg/grpc"
 )
 
 var (

@@ -2,7 +2,7 @@ package containerlibcontext
 
 import (
 	stdcontext "context"
-	"github.com/resource-aware-jds/worker-lib/model"
+	"github.com/resource-aware-jds/container-lib/model"
 	"time"
 )
 

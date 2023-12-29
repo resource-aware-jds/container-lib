@@ -7,10 +7,10 @@
 package di
 
 import (
-	"github.com/resource-aware-jds/worker-lib/config"
-	"github.com/resource-aware-jds/worker-lib/facade"
-	"github.com/resource-aware-jds/worker-lib/handler"
-	"github.com/resource-aware-jds/worker-lib/pkg/grpc"
+	"github.com/resource-aware-jds/container-lib/config"
+	"github.com/resource-aware-jds/container-lib/facade"
+	"github.com/resource-aware-jds/container-lib/handler"
+	"github.com/resource-aware-jds/container-lib/pkg/grpc"
 )
 
 // Injectors from wire.go:

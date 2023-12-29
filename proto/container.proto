@@ -1,6 +1,6 @@
 syntax = "proto3";
 import "google/protobuf/empty.proto";
-option go_package = "github.com/resource-aware-jds/worker-lib/generated/proto";
+option go_package = "github.com/resource-aware-jds/container-lib/generated/proto";
 
 package Container;
 

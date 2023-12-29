@@ -1,8 +1,8 @@
-package workerlib
+package containerlib
 
 import (
-	"github.com/resource-aware-jds/worker-lib/di"
-	"github.com/resource-aware-jds/worker-lib/facade"
+	"github.com/resource-aware-jds/container-lib/di"
+	"github.com/resource-aware-jds/container-lib/facade"
 	"github.com/sirupsen/logrus"
 	"os"
 	"os/signal"

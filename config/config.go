@@ -3,7 +3,7 @@ package config
 import (
 	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
-	"github.com/resource-aware-jds/worker-lib/pkg/grpc"
+	"github.com/resource-aware-jds/container-lib/pkg/grpc"
 	"github.com/sirupsen/logrus"
 	"os"
 )

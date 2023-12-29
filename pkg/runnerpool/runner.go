@@ -2,8 +2,8 @@ package runnerpool
 
 import (
 	"context"
-	"github.com/resource-aware-jds/worker-lib/facade"
-	"github.com/resource-aware-jds/worker-lib/model"
+	"github.com/resource-aware-jds/container-lib/facade"
+	"github.com/resource-aware-jds/container-lib/model"
 )
 
 type runner struct {

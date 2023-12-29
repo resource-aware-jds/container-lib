@@ -2,8 +2,8 @@ package runnerpool
 
 import (
 	"fmt"
-	"github.com/resource-aware-jds/worker-lib/pkg/datastructure"
-	"github.com/resource-aware-jds/worker-lib/pkg/observer"
+	"github.com/resource-aware-jds/container-lib/pkg/datastructure"
+	"github.com/resource-aware-jds/container-lib/pkg/observer"
 	"strconv"
 )
 
