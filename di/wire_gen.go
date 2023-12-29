@@ -8,14 +8,14 @@ package di
 
 import (
 	"github.com/resource-aware-jds/worker-lib/config"
+	"github.com/resource-aware-jds/worker-lib/facade"
 	"github.com/resource-aware-jds/worker-lib/handler"
-	"github.com/resource-aware-jds/worker-lib/model"
 	"github.com/resource-aware-jds/worker-lib/pkg/grpc"
 )
 
 // Injectors from wire.go:
 
-func InitializeApplication(workerHandlerFunc model.WorkerHandlerFunc) (App, func(), error) {
+func InitializeApplication(containerHandlerFunction facade.ContainerHandlerFunction) (App, func(), error) {
 	configConfig, err := config.ProvideConfig()
 	if err != nil {
 		return App{}, nil, err
@@ -25,7 +25,7 @@ func InitializeApplication(workerHandlerFunc model.WorkerHandlerFunc) (App, func
 	if err != nil {
 		return App{}, nil, err
 	}
-	grpcHandler, err := handler.ProvideGRPCHandler(socketServer, workerHandlerFunc)
+	grpcHandler, err := handler.ProvideGRPCHandler(socketServer, containerHandlerFunction)
 	if err != nil {
 		cleanup()
 		return App{}, nil, err

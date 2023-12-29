@@ -2,9 +2,9 @@ package runnerpool
 
 import (
 	"context"
+	"github.com/resource-aware-jds/worker-lib/facade"
 	"github.com/resource-aware-jds/worker-lib/model"
 	"github.com/resource-aware-jds/worker-lib/pkg/workerlibcontext"
-	"github.com/resource-aware-jds/worker-lib/test"
 )
 
 type runner struct {
@@ -15,7 +15,7 @@ type runner struct {
 
 type Runner interface {
 	GetID() string
-	Run(ctx context.Context, handlerFunc test.WorkerHandlerFunc, task model.Task) error
+	Run(ctx context.Context, handlerFunc facade.ContainerHandlerFunction, task model.Task) error
 }
 
 func ProvideRunner(id string) Runner {
@@ -28,7 +28,7 @@ func (w runner) GetID() string {
 	return w.id
 }
 
-func (w runner) Run(ctx context.Context, handlerFunc test.WorkerHandlerFunc, task model.Task) error {
+func (w runner) Run(ctx context.Context, handlerFunc facade.ContainerHandlerFunction, task model.Task) error {
 	internalCtx := workerlibcontext.ProvideContext(ctx, task)
 
 	go func(innerCtx workerlibcontext.Context) {

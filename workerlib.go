@@ -2,14 +2,14 @@ package workerlib
 
 import (
 	"github.com/resource-aware-jds/worker-lib/di"
-	"github.com/resource-aware-jds/worker-lib/model"
+	"github.com/resource-aware-jds/worker-lib/facade"
 	"github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
 	"syscall"
 )
 
-func Run(workerHandlerFunc model.WorkerHandlerFunc) {
+func Run(workerHandlerFunc facade.ContainerHandlerFunction) {
 	app, cleanup, err := di.InitializeApplication(workerHandlerFunc)
 	if err != nil {
 		cleanup()

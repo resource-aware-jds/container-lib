@@ -6,14 +6,14 @@ package di
 import (
 	"github.com/google/wire"
 	configDI "github.com/resource-aware-jds/worker-lib/config/di"
+	"github.com/resource-aware-jds/worker-lib/facade"
 	handlerDI "github.com/resource-aware-jds/worker-lib/handler/di"
-	"github.com/resource-aware-jds/worker-lib/model"
 	pkgDI "github.com/resource-aware-jds/worker-lib/pkg/di"
 )
 
 //go:generate wire
 
-func InitializeApplication(workerHandlerFunc model.WorkerHandlerFunc) (App, func(), error) {
+func InitializeApplication(containerHandlerFunction facade.ContainerHandlerFunction) (App, func(), error) {
 	panic(
 		wire.Build(
 			ProvideApp,
