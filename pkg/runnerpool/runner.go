@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/resource-aware-jds/worker-lib/facade"
 	"github.com/resource-aware-jds/worker-lib/model"
-	"github.com/resource-aware-jds/worker-lib/pkg/workerlibcontext"
 )
 
 type runner struct {
@@ -29,9 +28,9 @@ func (w runner) GetID() string {
 }
 
 func (w runner) Run(ctx context.Context, handlerFunc facade.ContainerHandlerFunction, task model.Task) error {
-	internalCtx := workerlibcontext.ProvideContext(ctx, task)
+	internalCtx := containerlibcontext.ProvideContext(ctx, task)
 
-	go func(innerCtx workerlibcontext.Context) {
+	go func(innerCtx containerlibcontext.Context) {
 		err := handlerFunc(internalCtx)
 		w.errChannel <- err
 	}(internalCtx)
