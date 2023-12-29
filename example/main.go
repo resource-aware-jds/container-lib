@@ -2,6 +2,7 @@ package main
 
 import (
 	workerlib "github.com/resource-aware-jds/container-lib"
+	"github.com/resource-aware-jds/container-lib/pkg/containerlibcontext"
 	"time"
 )
 
