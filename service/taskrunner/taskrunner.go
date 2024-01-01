@@ -2,18 +2,17 @@ package taskrunner
 
 import (
 	"context"
-	"github.com/resource-aware-jds/container-lib/pkg/runnerpool"
 )
 
 type service struct {
-	runnerPool runnerpool.Pool
+	runnerPool taskrunner.Pool
 }
 
 type Service interface {
 	Loop(ctx context.Context)
 }
 
-func ProvideService(runnerPool runnerpool.Pool) Service {
+func ProvideService(runnerPool taskrunner.Pool) Service {
 	result := service{
 		runnerPool: runnerPool,
 	}
@@ -36,7 +35,7 @@ func (s *service) Loop(ctx context.Context) {
 	}(ctx)
 }
 
-func (s *service) OnEvent(e runnerpool.PoolEvent) {
+func (s *service) OnEvent(e taskrunner.PoolEvent) {
 	//TODO implement me
 	panic("implement me")
 }

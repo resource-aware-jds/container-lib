@@ -1,4 +1,4 @@
-package runnerpool
+package taskrunner
 
 import (
 	"context"

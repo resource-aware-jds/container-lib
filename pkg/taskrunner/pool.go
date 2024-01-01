@@ -1,4 +1,4 @@
-package runnerpool
+package taskrunner
 
 import (
 	"fmt"
@@ -22,7 +22,7 @@ type Pool interface {
 	ReturnRunner(*Runner)
 }
 
-func ProvideRunnerPool(numberOfWorker int) (Pool, error) {
+func ProvideTaskRunnerPool(numberOfWorker int) (Pool, error) {
 	runnerQueue := datastructure.ProvideQueue[*Runner](numberOfWorker)
 
 	for i := 0; i < numberOfWorker; i++ {
