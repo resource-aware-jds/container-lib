@@ -21,7 +21,8 @@ func main() {
 				time.Sleep(1 * time.Second)
 			}
 
-			if count == 50 {
+			if count == 20 {
+				ctx.Success()
 				return nil
 			}
 			count++

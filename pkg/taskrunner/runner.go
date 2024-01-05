@@ -1,7 +1,6 @@
 package taskrunner
 
 import (
-	"context"
 	"github.com/resource-aware-jds/container-lib/facade"
 	"github.com/resource-aware-jds/container-lib/model"
 	"github.com/resource-aware-jds/container-lib/pkg/containerlibcontext"
@@ -15,7 +14,7 @@ type runner struct {
 
 type Runner interface {
 	GetID() string
-	Run(ctx context.Context, handlerFunc facade.ContainerHandlerFunction, task model.Task) (containerlibcontext.Context, error)
+	Run(ctx containerlibcontext.Context, handlerFunc facade.ContainerHandlerFunction, task model.Task) error
 }
 
 func ProvideRunner(id string) Runner {
@@ -32,13 +31,12 @@ func (w runner) GetID() string {
 	return w.id
 }
 
-func (w runner) Run(ctx context.Context, handlerFunc facade.ContainerHandlerFunction, task model.Task) (containerlibcontext.Context, error) {
+func (w runner) Run(ctx containerlibcontext.Context, handlerFunc facade.ContainerHandlerFunction, task model.Task) error {
 	w.logger.Info("[TaskRunner] Starting to work on task ", task.ID.GetRawTaskID())
-	internalCtx := containerlibcontext.ProvideContext(ctx)
 
-	err := handlerFunc(internalCtx, task)
+	err := handlerFunc(ctx, task)
 	if err != nil {
 		w.logger.Error(err)
 	}
-	return internalCtx, err
+	return err
 }

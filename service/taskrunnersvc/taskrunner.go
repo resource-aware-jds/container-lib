@@ -6,6 +6,7 @@ import (
 	"github.com/resource-aware-jds/container-lib/facade"
 	"github.com/resource-aware-jds/container-lib/generated/proto/github.com/resource-aware-jds/container-lib/generated/proto"
 	"github.com/resource-aware-jds/container-lib/model"
+	"github.com/resource-aware-jds/container-lib/pkg/containerlibcontext"
 	"github.com/resource-aware-jds/container-lib/pkg/grpc"
 	"github.com/resource-aware-jds/container-lib/pkg/mapper"
 	"github.com/resource-aware-jds/container-lib/pkg/taskrunner"
@@ -105,41 +106,60 @@ func (s *service) loopRoutine(ctx context.Context) {
 		return
 	}
 
-	go func(innerCtx context.Context, innerRunner taskrunner.Runner, handlerFunc facade.ContainerHandlerFunction, innerTask model.Task) {
-		internalContext, innerErr := innerRunner.Run(innerCtx, handlerFunc, innerTask)
+	go s.runTask(ctx, runner, *task)
+}
 
-		// Always return runner to the pool
-		defer s.runnerPool.ReturnRunner(innerRunner)
+func (s *service) runTask(ctx context.Context, runner taskrunner.Runner, task model.Task) {
+	logger := logrus.WithFields(logrus.Fields{
+		"taskID":   task.ID.GetRawTaskID(),
+		"runnerID": runner.GetID(),
+	})
 
-		if innerErr == nil {
-			// Report Success
-			_, err := s.workerNodeGRPCClient.SubmitSuccessTask(innerCtx, &proto.SubmitSuccessTaskRequest{
-				ID:      innerTask.ID.GetRawTaskID(),
-				Results: internalContext.GetResults(),
-			})
-			if err != nil {
-				// TODO: Create a retry?
-				return
-			}
-			return
-		} else {
-			// Report Success
-			_, err := s.workerNodeGRPCClient.ReportTaskFailure(innerCtx, &proto.ReportTaskFailureRequest{
-				ID:          innerTask.ID.GetRawTaskID(),
-				ErrorDetail: innerErr.Error(),
-			})
-			if err != nil {
-				// TODO: Create a retry?
-				return
-			}
+	logger.Debugf("[TaskRunner Manager] TaskRunner GoRoutine started")
+	internalContext := containerlibcontext.ProvideContext(ctx)
+	innerErr := runner.Run(internalContext, s.handlerFunc, task)
+
+	// Always return runner to the pool
+	defer s.runnerPool.ReturnRunner(runner)
+
+	if innerErr == nil && internalContext.GetSuccessResult() {
+		// Report Success
+		_, err := s.workerNodeGRPCClient.SubmitSuccessTask(context.Background(), &proto.SubmitSuccessTaskRequest{
+			ID:      task.ID.GetRawTaskID(),
+			Results: internalContext.GetResults(),
+		})
+		if err != nil {
+			logger.Errorf("[TaskRunner Manager] Fail to submit the success task with error (%s)", err.Error())
+			// TODO: Create a retry?
 			return
 		}
+		return
+	}
 
-	}(ctx, runner, s.handlerFunc, *task)
-	logrus.Debugf("[TaskRunner Manager] TaskRunner GoRoutine started")
+	errMsg := ""
+	if innerErr != nil {
+		errMsg = innerErr.Error()
+	}
+
+	logger.Warnf("[TaskRunner Manager] Handler Function didn't call the containerlibcontext.Success() method and report this error (%s)", innerErr)
+	// Report Failure
+	_, err := s.workerNodeGRPCClient.ReportTaskFailure(context.Background(), &proto.ReportTaskFailureRequest{
+		ID:          task.ID.GetRawTaskID(),
+		ErrorDetail: errMsg,
+	})
+	if err != nil {
+		logger.Errorf("[TaskRunner Manager] Fail to submit the failure task with error (%s)", err.Error())
+		// TODO: Create a retry?
+		return
+	}
+	return
 }
 
 func (s *service) OnEvent(e taskrunner.PoolEvent) {
+	if s.ctx.Err() != nil {
+		logrus.Debugf("[TaskRunner Manager] Ignoring the TaskRunnerPool event due to context error (%s)", s.ctx.Err())
+		return
+	}
 	s.loopRoutine(s.ctx)
 }
 

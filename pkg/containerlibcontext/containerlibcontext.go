@@ -18,12 +18,14 @@ type Context interface {
 	Cancel()
 	RecordResult(result []byte)
 	GetResults() [][]byte
+	GetSuccessResult() bool
 }
 
 func ProvideContext(ctx stdcontext.Context) Context {
 	newCtx, cancelFunc := stdcontext.WithCancel(ctx)
 
 	return &context{
+		isSuccess:      false,
 		ctx:            newCtx,
 		cancelFunction: cancelFunc,
 		results:        make([][]byte, 0),
@@ -60,4 +62,8 @@ func (c *context) RecordResult(result []byte) {
 
 func (c *context) GetResults() [][]byte {
 	return c.results
+}
+
+func (c *context) GetSuccessResult() bool {
+	return c.isSuccess
 }
