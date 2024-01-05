@@ -10,6 +10,7 @@ import (
 	"github.com/resource-aware-jds/container-lib/pkg/grpc"
 	"github.com/resource-aware-jds/container-lib/pkg/mapper"
 	"github.com/resource-aware-jds/container-lib/pkg/taskrunner"
+	"github.com/resource-aware-jds/container-lib/pkg/timeutil"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"sync"
@@ -53,12 +54,10 @@ func ProvideService(runnerPool taskrunner.Pool, grpcClient grpc.SocketClient, ha
 
 func (s *service) Run() {
 	logrus.Info("[TaskRunner Manager] Starting the TaskRunner manager loop")
-	s.gracefullyShutdownWaitGroup.Add(1)
 	go func(ctx context.Context) {
 		for {
 			select {
 			case <-ctx.Done():
-				s.gracefullyShutdownWaitGroup.Done()
 				return
 			default:
 				s.loopRoutine(ctx)
@@ -75,10 +74,12 @@ func (s *service) GracefullyShutdown() {
 }
 
 func (s *service) loopRoutine(ctx context.Context) {
+	s.gracefullyShutdownWaitGroup.Add(1)
 	// Check if pool still has some worker left
 	if !s.runnerPool.IsAvailableRunner() {
 		logrus.Warnf("[TaskRunner Manager] No TaskRunner available in the pool, Skipping this loop.")
-		time.Sleep(10 * time.Second)
+		timeutil.SleepWithContext(ctx, 10*time.Second)
+		s.gracefullyShutdownWaitGroup.Done()
 		return
 	}
 
@@ -86,7 +87,8 @@ func (s *service) loopRoutine(ctx context.Context) {
 	task, err := s.PollTaskFromWorkerNode(ctx)
 	if err != nil {
 		logrus.Warnf("[TaskRunner Manager] Failed to poll task from WorkerNode with error %s", err.Error())
-		time.Sleep(10 * time.Second)
+		timeutil.SleepWithContext(ctx, 10*time.Second)
+		s.gracefullyShutdownWaitGroup.Done()
 		return
 	}
 
@@ -102,7 +104,8 @@ func (s *service) loopRoutine(ctx context.Context) {
 			// TODO: Create a loop to retry?
 			logrus.Warnf("[TaskRunner Manager] Failed to report task failure back to Worker Node with error %s", err.Error())
 		}
-		time.Sleep(10 * time.Second)
+		timeutil.SleepWithContext(ctx, 10*time.Second)
+		s.gracefullyShutdownWaitGroup.Done()
 		return
 	}
 
@@ -110,6 +113,7 @@ func (s *service) loopRoutine(ctx context.Context) {
 }
 
 func (s *service) runTask(ctx context.Context, runner taskrunner.Runner, task model.Task) {
+	defer s.gracefullyShutdownWaitGroup.Done()
 	logger := logrus.WithFields(logrus.Fields{
 		"taskID":   task.ID.GetRawTaskID(),
 		"runnerID": runner.GetID(),
