@@ -15,7 +15,7 @@ type runner struct {
 
 type Runner interface {
 	GetID() string
-	Run(ctx context.Context, handlerFunc facade.ContainerHandlerFunction, task model.Task) error
+	Run(ctx context.Context, handlerFunc facade.ContainerHandlerFunction, task model.Task) (containerlibcontext.Context, error)
 }
 
 func ProvideRunner(id string) Runner {
@@ -28,13 +28,7 @@ func (w runner) GetID() string {
 	return w.id
 }
 
-func (w runner) Run(ctx context.Context, handlerFunc facade.ContainerHandlerFunction, task model.Task) error {
-	internalCtx := containerlibcontext.ProvideContext(ctx, task)
-
-	go func(innerCtx containerlibcontext.Context) {
-		err := handlerFunc(internalCtx)
-		w.errChannel <- err
-	}(internalCtx)
-
-	return nil
+func (w runner) Run(ctx context.Context, handlerFunc facade.ContainerHandlerFunction, task model.Task) (containerlibcontext.Context, error) {
+	internalCtx := containerlibcontext.ProvideContext(ctx)
+	return internalCtx, handlerFunc(internalCtx, task)
 }

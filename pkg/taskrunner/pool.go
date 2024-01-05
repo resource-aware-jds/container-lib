@@ -10,7 +10,7 @@ import (
 type PoolEvent any
 
 type pool struct {
-	runnerQueue datastructure.Queue[*Runner]
+	runnerQueue datastructure.Queue[Runner]
 	subscribers []observer.Subscriber[PoolEvent]
 }
 
@@ -18,8 +18,8 @@ type Pool interface {
 	observer.Publisher[PoolEvent]
 
 	IsAvailableRunner() bool
-	RequestRunner() (*Runner, error)
-	ReturnRunner(*Runner)
+	RequestRunner() (Runner, error)
+	ReturnRunner(Runner)
 }
 
 type PoolConfig struct {
@@ -27,11 +27,11 @@ type PoolConfig struct {
 }
 
 func ProvideTaskRunnerPool(config PoolConfig) (Pool, error) {
-	runnerQueue := datastructure.ProvideQueue[*Runner](config.NumberOfWorker)
+	runnerQueue := datastructure.ProvideQueue[Runner](config.NumberOfWorker)
 
 	for i := 0; i < config.NumberOfWorker; i++ {
 		createdWorker := ProvideRunner(strconv.Itoa(i))
-		runnerQueue.Push(&createdWorker)
+		runnerQueue.Push(createdWorker)
 	}
 
 	return &pool{
@@ -43,7 +43,7 @@ func (p *pool) IsAvailableRunner() bool {
 	return !p.runnerQueue.Empty()
 }
 
-func (p *pool) RequestRunner() (*Runner, error) {
+func (p *pool) RequestRunner() (Runner, error) {
 	if !p.IsAvailableRunner() {
 		return nil, fmt.Errorf("no available worker")
 	}
@@ -56,7 +56,7 @@ func (p *pool) RequestRunner() (*Runner, error) {
 	return *poppedWorker, nil
 }
 
-func (p *pool) ReturnRunner(w *Runner) {
+func (p *pool) ReturnRunner(w Runner) {
 	p.runnerQueue.Push(w)
 }
 

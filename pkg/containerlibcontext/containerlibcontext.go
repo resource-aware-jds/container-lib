@@ -2,7 +2,6 @@ package containerlibcontext
 
 import (
 	stdcontext "context"
-	"github.com/resource-aware-jds/container-lib/model"
 	"time"
 )
 
@@ -11,8 +10,6 @@ type context struct {
 	isSuccess      bool
 	cancelFunction func()
 	results        [][]byte
-	task           model.Task
-	taskAttributes model.TaskAttributes
 }
 
 type Context interface {
@@ -20,16 +17,15 @@ type Context interface {
 	Success()
 	Cancel()
 	RecordResult(result []byte)
-	GetTask() model.Task
+	GetResults() [][]byte
 }
 
-func ProvideContext(ctx stdcontext.Context, task model.Task) Context {
+func ProvideContext(ctx stdcontext.Context) Context {
 	newCtx, cancelFunc := stdcontext.WithCancel(ctx)
 
 	return &context{
 		ctx:            newCtx,
 		cancelFunction: cancelFunc,
-		task:           task,
 		results:        make([][]byte, 0),
 	}
 }
@@ -62,6 +58,6 @@ func (c *context) RecordResult(result []byte) {
 	c.results = append(c.results, result)
 }
 
-func (c *context) GetTask() model.Task {
-	return c.task
+func (c *context) GetResults() [][]byte {
+	return c.results
 }
