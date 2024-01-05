@@ -22,10 +22,14 @@ type Pool interface {
 	ReturnRunner(*Runner)
 }
 
-func ProvideTaskRunnerPool(numberOfWorker int) (Pool, error) {
-	runnerQueue := datastructure.ProvideQueue[*Runner](numberOfWorker)
+type PoolConfig struct {
+	NumberOfWorker int
+}
 
-	for i := 0; i < numberOfWorker; i++ {
+func ProvideTaskRunnerPool(config PoolConfig) (Pool, error) {
+	runnerQueue := datastructure.ProvideQueue[*Runner](config.NumberOfWorker)
+
+	for i := 0; i < config.NumberOfWorker; i++ {
 		createdWorker := ProvideRunner(strconv.Itoa(i))
 		runnerQueue.Push(&createdWorker)
 	}

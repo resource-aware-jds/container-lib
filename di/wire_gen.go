@@ -11,6 +11,8 @@ import (
 	"github.com/resource-aware-jds/container-lib/facade"
 	"github.com/resource-aware-jds/container-lib/handler"
 	"github.com/resource-aware-jds/container-lib/pkg/grpc"
+	"github.com/resource-aware-jds/container-lib/pkg/taskrunner"
+	"github.com/resource-aware-jds/container-lib/service/taskrunnersvc"
 )
 
 // Injectors from wire.go:
@@ -30,7 +32,20 @@ func InitializeApplication(containerHandlerFunction facade.ContainerHandlerFunct
 		cleanup()
 		return App{}, nil, err
 	}
-	app := ProvideApp(socketServer, grpcHandler)
+	poolConfig := config.ProvideTaskRunnerPoolConfig(configConfig)
+	pool, err := taskrunner.ProvideTaskRunnerPool(poolConfig)
+	if err != nil {
+		cleanup()
+		return App{}, nil, err
+	}
+	socketClientConfig := config.ProvideGRPCSocketClientConfig(configConfig)
+	socketClient, err := grpc.ProvideGRPCSocketClient(socketClientConfig)
+	if err != nil {
+		cleanup()
+		return App{}, nil, err
+	}
+	service := taskrunnersvc.ProvideService(pool, socketClient)
+	app := ProvideApp(socketServer, grpcHandler, service)
 	return app, func() {
 		cleanup()
 	}, nil

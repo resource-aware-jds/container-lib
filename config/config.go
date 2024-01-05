@@ -4,12 +4,15 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/resource-aware-jds/container-lib/pkg/grpc"
+	"github.com/resource-aware-jds/container-lib/pkg/taskrunner"
 	"github.com/sirupsen/logrus"
 	"os"
 )
 
 type Config struct {
-	UnixSocketPath string `envconfig:"UNIX_SOCKET_PATH"`
+	ContainerUnixSocketPath  string `envconfig:"CONTAINER_UNIX_SOCKET_PATH"`
+	WorkerNodeUnixSocketPath string `envconfig:"WORKER_NODE_UNIX_SOCKET_PATH"`
+	InitialWorker            int    `envconfig:"INITIAL_WORKER"`
 }
 
 func ProvideConfig() (*Config, error) {
@@ -33,6 +36,18 @@ func ProvideConfig() (*Config, error) {
 
 func ProvideGRPCSocketServerConfig(config *Config) grpc.ServerConfig {
 	return grpc.ServerConfig{
-		UnixSocketPath: config.UnixSocketPath,
+		UnixSocketPath: config.ContainerUnixSocketPath,
+	}
+}
+
+func ProvideTaskRunnerPoolConfig(config *Config) taskrunner.PoolConfig {
+	return taskrunner.PoolConfig{
+		NumberOfWorker: config.InitialWorker,
+	}
+}
+
+func ProvideGRPCSocketClientConfig(config *Config) grpc.SocketClientConfig {
+	return grpc.SocketClientConfig{
+		Target: config.WorkerNodeUnixSocketPath,
 	}
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/resource-aware-jds/container-lib/facade"
 	handlerDI "github.com/resource-aware-jds/container-lib/handler/di"
 	pkgDI "github.com/resource-aware-jds/container-lib/pkg/di"
+	serviceDI "github.com/resource-aware-jds/container-lib/service/di"
 )
 
 //go:generate wire
@@ -20,6 +21,7 @@ func InitializeApplication(containerHandlerFunction facade.ContainerHandlerFunct
 			configDI.ConfigWireSet,
 			pkgDI.PKGWireSet,
 			handlerDI.HandlerWireSet,
+			serviceDI.ServiceWireSet,
 		),
 	)
 }

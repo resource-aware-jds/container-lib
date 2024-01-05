@@ -9,5 +9,7 @@ var (
 	ConfigWireSet = wire.NewSet(
 		config.ProvideConfig,
 		config.ProvideGRPCSocketServerConfig,
+		config.ProvideTaskRunnerPoolConfig,
+		config.ProvideGRPCSocketClientConfig,
 	)
 )
