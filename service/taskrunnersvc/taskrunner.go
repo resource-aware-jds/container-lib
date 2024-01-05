@@ -10,6 +10,7 @@ import (
 	"github.com/resource-aware-jds/container-lib/pkg/mapper"
 	"github.com/resource-aware-jds/container-lib/pkg/taskrunner"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"sync"
 	"time"
 )
@@ -143,7 +144,7 @@ func (s *service) OnEvent(e taskrunner.PoolEvent) {
 }
 
 func (s *service) PollTaskFromWorkerNode(ctx context.Context) (*model.Task, error) {
-	result, err := s.workerNodeGRPCClient.GetTaskFromQueue(ctx, nil)
+	result, err := s.workerNodeGRPCClient.GetTaskFromQueue(ctx, &emptypb.Empty{})
 	if err != nil {
 		return nil, err
 	}

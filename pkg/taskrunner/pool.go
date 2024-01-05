@@ -6,11 +6,13 @@ import (
 	"github.com/resource-aware-jds/container-lib/pkg/observer"
 	"github.com/sirupsen/logrus"
 	"strconv"
+	"sync"
 )
 
 type PoolEvent any
 
 type pool struct {
+	runnerMu    sync.Mutex
 	runnerQueue datastructure.Queue[Runner]
 	subscribers []observer.Subscriber[PoolEvent]
 }
@@ -42,6 +44,9 @@ func ProvideTaskRunnerPool(config PoolConfig) (Pool, error) {
 }
 
 func (p *pool) IsAvailableRunner() bool {
+	p.runnerMu.Lock()
+	defer p.runnerMu.Unlock()
+
 	return !p.runnerQueue.Empty()
 }
 
@@ -51,7 +56,9 @@ func (p *pool) RequestRunner() (Runner, error) {
 		return nil, fmt.Errorf("no available runner")
 	}
 
+	p.runnerMu.Lock()
 	poppedRunner, ok := p.runnerQueue.Pop()
+	p.runnerMu.Unlock()
 	if !ok {
 		logrus.Error("[TaskRunnerPool] Failed to get runner")
 		return nil, fmt.Errorf("failed to get runner")
@@ -64,7 +71,9 @@ func (p *pool) RequestRunner() (Runner, error) {
 
 func (p *pool) ReturnRunner(w Runner) {
 	logrus.Infof("[TaskRunnerPool] Runner %s has been returned to the pool", w.GetID())
+	p.runnerMu.Lock()
 	p.runnerQueue.Push(w)
+	p.runnerMu.Unlock()
 
 	// Notify the subscriber about the available runner
 	p.NotifySubscribers(nil)

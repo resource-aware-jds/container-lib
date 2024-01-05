@@ -4,13 +4,27 @@ import (
 	workerlib "github.com/resource-aware-jds/container-lib"
 	"github.com/resource-aware-jds/container-lib/model"
 	"github.com/resource-aware-jds/container-lib/pkg/containerlibcontext"
+	"github.com/sirupsen/logrus"
 	"time"
 )
 
 func main() {
 	workerlib.Run(func(ctx containerlibcontext.Context, task model.Task) error {
-		// Simulate the log running job.
-		time.Sleep(10 * time.Second)
-		return nil
+		count := 0
+		for {
+			select {
+			case <-ctx.Done():
+				logrus.Warn("Context has been canceled")
+				return nil
+			default:
+				// Simulate the log running job.
+				time.Sleep(1 * time.Second)
+			}
+
+			if count == 50 {
+				return nil
+			}
+			count++
+		}
 	})
 }

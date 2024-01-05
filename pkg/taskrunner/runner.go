@@ -9,9 +9,8 @@ import (
 )
 
 type runner struct {
-	id         string
-	status     string
-	errChannel chan<- error
+	id     string
+	logger *logrus.Entry
 }
 
 type Runner interface {
@@ -23,6 +22,9 @@ func ProvideRunner(id string) Runner {
 	logrus.Debugf("[TaskRunner] Runner %s has been initialized", id)
 	return &runner{
 		id: id,
+		logger: logrus.WithFields(logrus.Fields{
+			"runnerID": id,
+		}),
 	}
 }
 
@@ -31,6 +33,12 @@ func (w runner) GetID() string {
 }
 
 func (w runner) Run(ctx context.Context, handlerFunc facade.ContainerHandlerFunction, task model.Task) (containerlibcontext.Context, error) {
+	w.logger.Info("[TaskRunner] Starting to work on task ", task.ID.GetRawTaskID())
 	internalCtx := containerlibcontext.ProvideContext(ctx)
-	return internalCtx, handlerFunc(internalCtx, task)
+
+	err := handlerFunc(internalCtx, task)
+	if err != nil {
+		w.logger.Error(err)
+	}
+	return internalCtx, err
 }
