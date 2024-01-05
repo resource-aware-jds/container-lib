@@ -44,9 +44,10 @@ func InitializeApplication(containerHandlerFunction facade.ContainerHandlerFunct
 		cleanup()
 		return App{}, nil, err
 	}
-	service := taskrunnersvc.ProvideService(pool, socketClient, containerHandlerFunction)
+	service, cleanup2 := taskrunnersvc.ProvideService(pool, socketClient, containerHandlerFunction)
 	app := ProvideApp(socketServer, grpcHandler, service)
 	return app, func() {
+		cleanup2()
 		cleanup()
 	}, nil
 }

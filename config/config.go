@@ -11,7 +11,7 @@ import (
 
 type Config struct {
 	ContainerUnixSocketPath  string `envconfig:"CONTAINER_UNIX_SOCKET_PATH" default:"/tmp/rajds_container.sock"`
-	WorkerNodeUnixSocketPath string `envconfig:"WORKER_NODE_UNIX_SOCKET_PATH" default:"/tmp/rajds_workernode.sock"`
+	WorkerNodeUnixSocketPath string `envconfig:"WORKER_NODE_UNIX_SOCKET_PATH" default:"unix:////tmp/rajds_workernode.sock"`
 	InitialWorker            int    `envconfig:"INITIAL_WORKER" default:"3"`
 }
 

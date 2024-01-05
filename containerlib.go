@@ -17,6 +17,7 @@ func Run(workerHandlerFunc facade.ContainerHandlerFunction) {
 	}
 
 	app.GRPCServer.Serve()
+	app.TaskRunnerSvc.Run()
 
 	// Gracefully Shutdown
 	// Make channel listen for signals from OS
