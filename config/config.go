@@ -10,9 +10,9 @@ import (
 )
 
 type Config struct {
-	ContainerUnixSocketPath  string `envconfig:"CONTAINER_UNIX_SOCKET_PATH"`
-	WorkerNodeUnixSocketPath string `envconfig:"WORKER_NODE_UNIX_SOCKET_PATH"`
-	InitialWorker            int    `envconfig:"INITIAL_WORKER"`
+	ContainerUnixSocketPath  string `envconfig:"CONTAINER_UNIX_SOCKET_PATH" default:"/tmp/rajds_container.sock"`
+	WorkerNodeUnixSocketPath string `envconfig:"WORKER_NODE_UNIX_SOCKET_PATH" default:"/tmp/rajds_workernode.sock"`
+	InitialWorker            int    `envconfig:"INITIAL_WORKER" default:"3"`
 }
 
 func ProvideConfig() (*Config, error) {
@@ -25,7 +25,6 @@ func ProvideConfig() (*Config, error) {
 	err := godotenv.Load(EnvConfigLocation)
 	if err != nil {
 		logrus.Warn("Can't load env file")
-		return nil, err
 	}
 
 	var config Config

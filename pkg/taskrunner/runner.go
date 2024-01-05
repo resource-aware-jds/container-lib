@@ -5,6 +5,7 @@ import (
 	"github.com/resource-aware-jds/container-lib/facade"
 	"github.com/resource-aware-jds/container-lib/model"
 	"github.com/resource-aware-jds/container-lib/pkg/containerlibcontext"
+	"github.com/sirupsen/logrus"
 )
 
 type runner struct {
@@ -19,6 +20,7 @@ type Runner interface {
 }
 
 func ProvideRunner(id string) Runner {
+	logrus.Debugf("[TaskRunner] Runner %s has been initialized", id)
 	return &runner{
 		id: id,
 	}

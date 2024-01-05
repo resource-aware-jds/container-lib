@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type socketClient struct {
@@ -19,6 +20,7 @@ type SocketClientConfig struct {
 func ProvideGRPCSocketClient(config SocketClientConfig) (SocketClient, error) {
 	grpcConnection, err := grpc.Dial(
 		config.Target,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
 		return nil, err

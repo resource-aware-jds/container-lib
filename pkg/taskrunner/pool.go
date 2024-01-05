@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/resource-aware-jds/container-lib/pkg/datastructure"
 	"github.com/resource-aware-jds/container-lib/pkg/observer"
+	"github.com/sirupsen/logrus"
 	"strconv"
 )
 
@@ -34,6 +35,7 @@ func ProvideTaskRunnerPool(config PoolConfig) (Pool, error) {
 		runnerQueue.Push(createdWorker)
 	}
 
+	logrus.Infof("[TaskRunnerPool] Initialized with %d runner(s)", config.NumberOfWorker)
 	return &pool{
 		runnerQueue: runnerQueue,
 	}, nil
@@ -45,19 +47,27 @@ func (p *pool) IsAvailableRunner() bool {
 
 func (p *pool) RequestRunner() (Runner, error) {
 	if !p.IsAvailableRunner() {
-		return nil, fmt.Errorf("no available worker")
+		logrus.Error("[TaskRunnerPool] No available runner in the pool")
+		return nil, fmt.Errorf("no available runner")
 	}
 
-	poppedWorker, ok := p.runnerQueue.Pop()
+	poppedRunner, ok := p.runnerQueue.Pop()
 	if !ok {
-		return nil, fmt.Errorf("failed to get worker")
+		logrus.Error("[TaskRunnerPool] Failed to get runner")
+		return nil, fmt.Errorf("failed to get runner")
 	}
 
-	return *poppedWorker, nil
+	dePointerPoppedRunner := *poppedRunner
+	logrus.Infof("[TaskRunnerPool] Runner %s has been sent out from the pool", dePointerPoppedRunner.GetID())
+	return dePointerPoppedRunner, nil
 }
 
 func (p *pool) ReturnRunner(w Runner) {
+	logrus.Infof("[TaskRunnerPool] Runner %s has been returned to the pool", w.GetID())
 	p.runnerQueue.Push(w)
+
+	// Notify the subscriber about the available runner
+	p.NotifySubscribers(nil)
 }
 
 func (p *pool) Subscribe(subscriber observer.Subscriber[PoolEvent]) {
@@ -70,6 +80,7 @@ func (p *pool) Unsubscribe(subscriber observer.Subscriber[PoolEvent]) {
 }
 
 func (p *pool) NotifySubscribers(e PoolEvent) {
+	logrus.Debug("[TaskRunnerPool] Notifying the Subscriber about the available runner")
 	for _, subscriber := range p.subscribers {
 		subscriber.OnEvent(e)
 	}

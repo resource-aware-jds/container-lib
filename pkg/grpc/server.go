@@ -25,6 +25,7 @@ type ServerConfig struct {
 func ProvideGRPCSocketServer(c ServerConfig) (SocketServer, func(), error) {
 	listener, err := net.Listen("unix", c.UnixSocketPath)
 	if err != nil {
+		logrus.Errorf("[GRPC Server] Failed to listen on %s with error %s", c.UnixSocketPath, err.Error())
 		return nil, nil, err
 	}
 
