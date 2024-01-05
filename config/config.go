@@ -12,7 +12,7 @@ import (
 type Config struct {
 	ContainerUnixSocketPath  string `envconfig:"CONTAINER_UNIX_SOCKET_PATH" default:"/tmp/rajds_container.sock"`
 	WorkerNodeUnixSocketPath string `envconfig:"WORKER_NODE_UNIX_SOCKET_PATH" default:"unix:////tmp/rajds_workernode.sock"`
-	InitialWorker            int    `envconfig:"INITIAL_WORKER" default:"3"`
+	InitialTaskRunner        int    `envconfig:"INITIAL_TASK_RUNNER" default:"3"`
 }
 
 func ProvideConfig() (*Config, error) {
@@ -41,7 +41,7 @@ func ProvideGRPCSocketServerConfig(config *Config) grpc.ServerConfig {
 
 func ProvideTaskRunnerPoolConfig(config *Config) taskrunner.PoolConfig {
 	return taskrunner.PoolConfig{
-		NumberOfWorker: config.InitialWorker,
+		NumberOfInitialTaskRunner: config.InitialTaskRunner,
 	}
 }
 

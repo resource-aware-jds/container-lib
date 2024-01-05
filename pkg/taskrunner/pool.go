@@ -26,18 +26,18 @@ type Pool interface {
 }
 
 type PoolConfig struct {
-	NumberOfWorker int
+	NumberOfInitialTaskRunner int
 }
 
 func ProvideTaskRunnerPool(config PoolConfig) (Pool, error) {
-	runnerQueue := datastructure.ProvideQueue[Runner](config.NumberOfWorker)
+	runnerQueue := datastructure.ProvideQueue[Runner](config.NumberOfInitialTaskRunner)
 
-	for i := 0; i < config.NumberOfWorker; i++ {
+	for i := 0; i < config.NumberOfInitialTaskRunner; i++ {
 		createdWorker := ProvideRunner(strconv.Itoa(i))
 		runnerQueue.Push(createdWorker)
 	}
 
-	logrus.Infof("[TaskRunnerPool] Initialized with %d runner(s)", config.NumberOfWorker)
+	logrus.Infof("[TaskRunnerPool] Initialized with %d runner(s)", config.NumberOfInitialTaskRunner)
 	return &pool{
 		runnerQueue: runnerQueue,
 	}, nil
@@ -65,12 +65,17 @@ func (p *pool) RequestRunner() (Runner, error) {
 	}
 
 	dePointerPoppedRunner := *poppedRunner
-	logrus.Infof("[TaskRunnerPool] Runner %s has been sent out from the pool", dePointerPoppedRunner.GetID())
+	logrus.WithFields(logrus.Fields{
+		"runnerID": dePointerPoppedRunner.GetID(),
+	}).Info("[TaskRunnerPool] A Runner has been sent out from the pool")
 	return dePointerPoppedRunner, nil
 }
 
 func (p *pool) ReturnRunner(w Runner) {
-	logrus.Infof("[TaskRunnerPool] Runner %s has been returned to the pool", w.GetID())
+
+	logrus.WithFields(logrus.Fields{
+		"runnerID": w.GetID(),
+	}).Info("[TaskRunnerPool] A Runner has been returned to the pool")
 	p.runnerMu.Lock()
 	p.runnerQueue.Push(w)
 	p.runnerMu.Unlock()
