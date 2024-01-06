@@ -97,7 +97,7 @@ func (s *service) loopRoutine(ctx context.Context) {
 	if err != nil {
 		logrus.Warnf("[TaskRunner Manager] Failed to get runner from pool with error %s", err.Error())
 		_, err = s.workerNodeGRPCClient.ReportTaskFailure(ctx, &proto.ReportTaskFailureRequest{
-			ID:          task.ID.GetRawTaskID(),
+			ID:          task.ID,
 			ErrorDetail: fmt.Sprintf("runner pool error: %s", err.Error()),
 		})
 		if err != nil {
@@ -115,7 +115,8 @@ func (s *service) loopRoutine(ctx context.Context) {
 func (s *service) runTask(ctx context.Context, runner taskrunner.Runner, task model.Task) {
 	defer s.gracefullyShutdownWaitGroup.Done()
 	logger := logrus.WithFields(logrus.Fields{
-		"taskID":   task.ID.GetRawTaskID(),
+		"taskID":   task.ID,
+		"jobID":    task.JobID,
 		"runnerID": runner.GetID(),
 	})
 
@@ -129,7 +130,7 @@ func (s *service) runTask(ctx context.Context, runner taskrunner.Runner, task mo
 	if innerErr == nil && internalContext.GetSuccessResult() {
 		// Report Success
 		_, err := s.workerNodeGRPCClient.SubmitSuccessTask(context.Background(), &proto.SubmitSuccessTaskRequest{
-			ID:      task.ID.GetRawTaskID(),
+			ID:      task.ID,
 			Results: internalContext.GetResults(),
 		})
 		if err != nil {
@@ -148,7 +149,7 @@ func (s *service) runTask(ctx context.Context, runner taskrunner.Runner, task mo
 	logger.Warnf("[TaskRunner Manager] Handler Function didn't call the containerlibcontext.Success() method and report this error (%s)", innerErr)
 	// Report Failure
 	_, err := s.workerNodeGRPCClient.ReportTaskFailure(context.Background(), &proto.ReportTaskFailureRequest{
-		ID:          task.ID.GetRawTaskID(),
+		ID:          task.ID,
 		ErrorDetail: errMsg,
 	})
 	if err != nil {
@@ -156,7 +157,6 @@ func (s *service) runTask(ctx context.Context, runner taskrunner.Runner, task mo
 		// TODO: Create a retry?
 		return
 	}
-	return
 }
 
 func (s *service) OnEvent(e taskrunner.PoolEvent) {

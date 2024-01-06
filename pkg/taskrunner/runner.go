@@ -32,7 +32,7 @@ func (w runner) GetID() string {
 }
 
 func (w runner) Run(ctx containerlibcontext.Context, handlerFunc facade.ContainerHandlerFunction, task model.Task) error {
-	w.logger.Info("[TaskRunner] Starting to work on task ", task.ID.GetRawTaskID())
+	w.logger.WithField("taskID", task.ID).Info("[TaskRunner] Starting to work on task ")
 
 	err := handlerFunc(ctx, task)
 	if err != nil {
