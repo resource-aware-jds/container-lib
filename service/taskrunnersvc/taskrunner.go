@@ -3,6 +3,7 @@ package taskrunnersvc
 import (
 	"context"
 	"fmt"
+	"github.com/resource-aware-jds/container-lib/config"
 	"github.com/resource-aware-jds/container-lib/facade"
 	"github.com/resource-aware-jds/container-lib/generated/proto/github.com/resource-aware-jds/container-lib/generated/proto"
 	"github.com/resource-aware-jds/container-lib/model"
@@ -12,7 +13,6 @@ import (
 	"github.com/resource-aware-jds/container-lib/pkg/taskrunner"
 	"github.com/resource-aware-jds/container-lib/pkg/timeutil"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"sync"
 	"time"
 )
@@ -24,6 +24,7 @@ type service struct {
 	ctx                         context.Context
 	cancelFunc                  func()
 	gracefullyShutdownWaitGroup sync.WaitGroup
+	config                      *config.Config
 }
 
 type Service interface {
@@ -32,7 +33,7 @@ type Service interface {
 	PollTaskFromWorkerNode(ctx context.Context) (*model.Task, error)
 }
 
-func ProvideService(runnerPool taskrunner.Pool, grpcClient grpc.SocketClient, handlerFunc facade.ContainerHandlerFunction) (Service, func()) {
+func ProvideService(config *config.Config, runnerPool taskrunner.Pool, grpcClient grpc.SocketClient, handlerFunc facade.ContainerHandlerFunction) (Service, func()) {
 	ctx := context.Background()
 	ctxWithCancel, cancelFunc := context.WithCancel(ctx)
 	client := proto.NewWorkerNodeContainerReceiverClient(grpcClient.GetConnection())
@@ -42,6 +43,7 @@ func ProvideService(runnerPool taskrunner.Pool, grpcClient grpc.SocketClient, ha
 		handlerFunc:          handlerFunc,
 		ctx:                  ctxWithCancel,
 		cancelFunc:           cancelFunc,
+		config:               config,
 	}
 	runnerPool.Subscribe(&result)
 
@@ -168,7 +170,9 @@ func (s *service) OnEvent(e taskrunner.PoolEvent) {
 }
 
 func (s *service) PollTaskFromWorkerNode(ctx context.Context) (*model.Task, error) {
-	result, err := s.workerNodeGRPCClient.GetTaskFromQueue(ctx, &emptypb.Empty{})
+	result, err := s.workerNodeGRPCClient.GetTaskFromQueue(ctx, &proto.GetTaskPayload{
+		ImageUrl: s.config.ImageURL,
+	})
 	if err != nil {
 		return nil, err
 	}
