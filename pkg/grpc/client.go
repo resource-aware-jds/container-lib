@@ -5,19 +5,19 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-type socketClient struct {
+type client struct {
 	connection *grpc.ClientConn
 }
 
-type SocketClient interface {
+type Client interface {
 	GetConnection() *grpc.ClientConn
 }
 
-type SocketClientConfig struct {
+type ClientConfig struct {
 	Target string
 }
 
-func ProvideGRPCSocketClient(config SocketClientConfig) (SocketClient, error) {
+func ProvideClient(config ClientConfig) (Client, error) {
 	grpcConnection, err := grpc.Dial(
 		config.Target,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -26,11 +26,11 @@ func ProvideGRPCSocketClient(config SocketClientConfig) (SocketClient, error) {
 		return nil, err
 	}
 
-	return &socketClient{
+	return &client{
 		connection: grpcConnection,
 	}, nil
 }
 
-func (s socketClient) GetConnection() *grpc.ClientConn {
+func (s client) GetConnection() *grpc.ClientConn {
 	return s.connection
 }

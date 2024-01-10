@@ -23,11 +23,11 @@ func InitializeApplication(containerHandlerFunction facade.ContainerHandlerFunct
 		return App{}, nil, err
 	}
 	serverConfig := config.ProvideGRPCSocketServerConfig(configConfig)
-	socketServer, cleanup, err := grpc.ProvideGRPCSocketServer(serverConfig)
+	server, cleanup, err := grpc.ProvideGRPCServer(serverConfig)
 	if err != nil {
 		return App{}, nil, err
 	}
-	grpcHandler, err := handler.ProvideGRPCHandler(socketServer, containerHandlerFunction)
+	grpcHandler, err := handler.ProvideGRPCHandler(server, containerHandlerFunction)
 	if err != nil {
 		cleanup()
 		return App{}, nil, err
@@ -38,14 +38,14 @@ func InitializeApplication(containerHandlerFunction facade.ContainerHandlerFunct
 		cleanup()
 		return App{}, nil, err
 	}
-	socketClientConfig := config.ProvideGRPCSocketClientConfig(configConfig)
-	socketClient, err := grpc.ProvideGRPCSocketClient(socketClientConfig)
+	clientConfig := config.ProvideGRPCSocketClientConfig(configConfig)
+	client, err := grpc.ProvideClient(clientConfig)
 	if err != nil {
 		cleanup()
 		return App{}, nil, err
 	}
-	service, cleanup2 := taskrunnersvc.ProvideService(configConfig, pool, socketClient, containerHandlerFunction)
-	app := ProvideApp(socketServer, grpcHandler, service)
+	service, cleanup2 := taskrunnersvc.ProvideService(configConfig, pool, client, containerHandlerFunction)
+	app := ProvideApp(server, grpcHandler, service)
 	return app, func() {
 		cleanup2()
 		cleanup()

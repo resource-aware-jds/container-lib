@@ -7,14 +7,14 @@ import (
 )
 
 type App struct {
-	GRPCServer    grpc.SocketServer
+	GRPCServer    grpc.Server
 	GRPCHandler   handler.GRPCHandler
 	TaskRunnerSvc taskrunnersvc.Service
 }
 
-func ProvideApp(grpcSocketServer grpc.SocketServer, grpcHandler handler.GRPCHandler, taskRunnerSvc taskrunnersvc.Service) App {
+func ProvideApp(grpcServer grpc.Server, grpcHandler handler.GRPCHandler, taskRunnerSvc taskrunnersvc.Service) App {
 	return App{
-		GRPCServer:    grpcSocketServer,
+		GRPCServer:    grpcServer,
 		GRPCHandler:   grpcHandler,
 		TaskRunnerSvc: taskRunnerSvc,
 	}

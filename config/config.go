@@ -10,10 +10,10 @@ import (
 )
 
 type Config struct {
-	ContainerUnixSocketPath  string `envconfig:"CONTAINER_UNIX_SOCKET_PATH" default:"/tmp/rajds_container.sock"`
-	WorkerNodeUnixSocketPath string `envconfig:"WORKER_NODE_UNIX_SOCKET_PATH" default:"unix:////tmp/rajds_workernode.sock"`
-	ImageURL                 string `envconfig:"IMAGE_URL" required:"true"`
-	InitialTaskRunner        int    `envconfig:"INITIAL_TASK_RUNNER" default:"3"`
+	ContainerGRPCListeningURL string `envconfig:"CONTAINER_GRPC_LISTENING_URL" default:"[::1]:31236"`
+	WorkerNodeReceiverGRPCURL string `envconfig:"WORKER_NODE_RECEIVER_GRPC_URL" default:"host.docker.internal:31237"`
+	ImageURL                  string `envconfig:"IMAGE_URL" required:"true"`
+	InitialTaskRunner         int    `envconfig:"INITIAL_TASK_RUNNER" default:"3"`
 }
 
 func ProvideConfig() (*Config, error) {
@@ -36,7 +36,7 @@ func ProvideConfig() (*Config, error) {
 
 func ProvideGRPCSocketServerConfig(config *Config) grpc.ServerConfig {
 	return grpc.ServerConfig{
-		UnixSocketPath: config.ContainerUnixSocketPath,
+		GRPCServerListeningAddr: config.ContainerGRPCListeningURL,
 	}
 }
 
@@ -46,8 +46,8 @@ func ProvideTaskRunnerPoolConfig(config *Config) taskrunner.PoolConfig {
 	}
 }
 
-func ProvideGRPCSocketClientConfig(config *Config) grpc.SocketClientConfig {
-	return grpc.SocketClientConfig{
-		Target: config.WorkerNodeUnixSocketPath,
+func ProvideGRPCSocketClientConfig(config *Config) grpc.ClientConfig {
+	return grpc.ClientConfig{
+		Target: config.WorkerNodeReceiverGRPCURL,
 	}
 }

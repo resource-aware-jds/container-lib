@@ -8,8 +8,8 @@ import (
 
 var (
 	PKGWireSet = wire.NewSet(
-		grpc.ProvideGRPCSocketServer,
-		grpc.ProvideGRPCSocketClient,
+		grpc.ProvideGRPCServer,
+		grpc.ProvideClient,
 		taskrunner.ProvideTaskRunnerPool,
 	)
 )

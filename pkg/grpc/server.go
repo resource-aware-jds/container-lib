@@ -5,30 +5,26 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"net"
-	"os"
 )
 
-type socketServer struct {
+type server struct {
 	listener   net.Listener
 	grpcServer *grpc.Server
 }
 
-type SocketServer interface {
+type ServerConfig struct {
+	GRPCServerListeningAddr string
+}
+
+type Server interface {
 	Serve()
 	GetGRPCServer() *grpc.Server
 }
 
-type ServerConfig struct {
-	UnixSocketPath string
-}
-
-func ProvideGRPCSocketServer(c ServerConfig) (SocketServer, func(), error) {
-	// Cleanup Path
-	os.Remove(c.UnixSocketPath)
-
-	listener, err := net.Listen("unix", c.UnixSocketPath)
+func ProvideGRPCServer(c ServerConfig) (Server, func(), error) {
+	listener, err := net.Listen("tcp", c.GRPCServerListeningAddr)
 	if err != nil {
-		logrus.Errorf("[GRPC Server] Failed to listen on %s with error %s", c.UnixSocketPath, err.Error())
+		logrus.Errorf("[GRPC Server] Failed to listen on %s with error %s", c.GRPCServerListeningAddr, err.Error())
 		return nil, nil, err
 	}
 
@@ -39,22 +35,21 @@ func ProvideGRPCSocketServer(c ServerConfig) (SocketServer, func(), error) {
 
 	cleanup := func() {
 		grpcServer.GracefulStop()
-		os.Remove(c.UnixSocketPath)
 	}
 
-	return &socketServer{
+	return &server{
 		listener:   listener,
 		grpcServer: grpcServer,
 	}, cleanup, nil
 }
 
-func (s socketServer) Serve() {
+func (s server) Serve() {
 	go func() {
 		logrus.Info("GRPC Server is Listening on: ", s.listener.Addr())
 		s.grpcServer.Serve(s.listener)
 	}()
 }
 
-func (s socketServer) GetGRPCServer() *grpc.Server {
+func (s server) GetGRPCServer() *grpc.Server {
 	return s.grpcServer
 }

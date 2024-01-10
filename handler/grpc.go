@@ -12,7 +12,7 @@ type GRPCHandler struct {
 	containerHandlerFunction facade.ContainerHandlerFunction
 }
 
-func ProvideGRPCHandler(grpcServer grpc.SocketServer, containerHandlerFunction facade.ContainerHandlerFunction) (GRPCHandler, error) {
+func ProvideGRPCHandler(grpcServer grpc.Server, containerHandlerFunction facade.ContainerHandlerFunction) (GRPCHandler, error) {
 	handler := GRPCHandler{
 		containerHandlerFunction: containerHandlerFunction,
 	}

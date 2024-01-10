@@ -33,7 +33,7 @@ type Service interface {
 	PollTaskFromWorkerNode(ctx context.Context) (*model.Task, error)
 }
 
-func ProvideService(config *config.Config, runnerPool taskrunner.Pool, grpcClient grpc.SocketClient, handlerFunc facade.ContainerHandlerFunction) (Service, func()) {
+func ProvideService(config *config.Config, runnerPool taskrunner.Pool, grpcClient grpc.Client, handlerFunc facade.ContainerHandlerFunction) (Service, func()) {
 	ctx := context.Background()
 	ctxWithCancel, cancelFunc := context.WithCancel(ctx)
 	client := proto.NewWorkerNodeContainerReceiverClient(grpcClient.GetConnection())
