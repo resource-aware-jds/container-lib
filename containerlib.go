@@ -4,6 +4,8 @@ import (
 	"github.com/resource-aware-jds/container-lib/di"
 	"github.com/resource-aware-jds/container-lib/facade"
 	"github.com/sirupsen/logrus"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,6 +16,16 @@ func Run(workerHandlerFunc facade.ContainerHandlerFunction) {
 	if err != nil {
 		cleanup()
 		panic(err)
+	}
+
+	if app.Config.Debug {
+		// Start the pprof debug server
+		go func() {
+			err := http.ListenAndServe(app.Config.ProfilingToolsListeningURL, nil)
+			if err != nil {
+				logrus.Warn(err)
+			}
+		}()
 	}
 
 	app.GRPCServer.Serve()
