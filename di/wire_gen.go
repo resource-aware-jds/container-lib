@@ -27,11 +27,6 @@ func InitializeApplication(containerHandlerFunction facade.ContainerHandlerFunct
 	if err != nil {
 		return App{}, nil, err
 	}
-	grpcHandler, err := handler.ProvideGRPCHandler(server, containerHandlerFunction)
-	if err != nil {
-		cleanup()
-		return App{}, nil, err
-	}
 	poolConfig := config.ProvideTaskRunnerPoolConfig(configConfig)
 	pool, err := taskrunner.ProvideTaskRunnerPool(poolConfig)
 	if err != nil {
@@ -45,6 +40,12 @@ func InitializeApplication(containerHandlerFunction facade.ContainerHandlerFunct
 		return App{}, nil, err
 	}
 	service, cleanup2 := taskrunnersvc.ProvideService(configConfig, pool, client, containerHandlerFunction)
+	grpcHandler, err := handler.ProvideGRPCHandler(server, service, containerHandlerFunction)
+	if err != nil {
+		cleanup2()
+		cleanup()
+		return App{}, nil, err
+	}
 	app := ProvideApp(server, grpcHandler, service, configConfig)
 	return app, func() {
 		cleanup2()

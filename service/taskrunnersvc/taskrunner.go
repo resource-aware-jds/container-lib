@@ -2,6 +2,7 @@ package taskrunnersvc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/resource-aware-jds/container-lib/config"
 	"github.com/resource-aware-jds/container-lib/facade"
@@ -9,12 +10,15 @@ import (
 	"github.com/resource-aware-jds/container-lib/model"
 	"github.com/resource-aware-jds/container-lib/pkg/containerlibcontext"
 	"github.com/resource-aware-jds/container-lib/pkg/grpc"
-	"github.com/resource-aware-jds/container-lib/pkg/mapper"
 	"github.com/resource-aware-jds/container-lib/pkg/taskrunner"
 	"github.com/resource-aware-jds/container-lib/pkg/timeutil"
 	"github.com/sirupsen/logrus"
 	"sync"
 	"time"
+)
+
+var (
+	ErrNoAvailableRunner = errors.New("no available runner")
 )
 
 type service struct {
@@ -28,9 +32,7 @@ type service struct {
 }
 
 type Service interface {
-	Run()
-	GracefullyShutdown()
-	PollTaskFromWorkerNode(ctx context.Context) (*model.Task, error)
+	RunTask(ctx context.Context, task model.Task) error
 }
 
 func ProvideService(config *config.Config, runnerPool taskrunner.Pool, grpcClient grpc.Client, handlerFunc facade.ContainerHandlerFunction) (Service, func()) {
@@ -54,44 +56,14 @@ func ProvideService(config *config.Config, runnerPool taskrunner.Pool, grpcClien
 	return &result, cleanup
 }
 
-func (s *service) Run() {
-	logrus.Info("[TaskRunner Manager] Starting the TaskRunner manager loop")
-	go func(ctx context.Context) {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				s.loopRoutine(ctx)
-			}
-		}
-	}(s.ctx)
-}
-
-func (s *service) GracefullyShutdown() {
-	logrus.Info("[TaskRunner Manager] Gracefully Shutting down signal received")
-	s.cancelFunc()
-	s.gracefullyShutdownWaitGroup.Wait()
-	logrus.Info("[TaskRunner Manager] Gracefully Shutdown success.")
-}
-
-func (s *service) loopRoutine(ctx context.Context) {
+func (s *service) RunTask(ctx context.Context, task model.Task) error {
 	s.gracefullyShutdownWaitGroup.Add(1)
 	// Check if pool still has some worker left
 	if !s.runnerPool.IsAvailableRunner() {
 		logrus.Warnf("[TaskRunner Manager] No TaskRunner available in the pool, Skipping this loop.")
 		timeutil.SleepWithContext(ctx, 10*time.Second)
 		s.gracefullyShutdownWaitGroup.Done()
-		return
-	}
-
-	// Pull the task
-	task, err := s.PollTaskFromWorkerNode(ctx)
-	if err != nil {
-		logrus.Warnf("[TaskRunner Manager] Failed to poll task from WorkerNode with error %s", err.Error())
-		timeutil.SleepWithContext(ctx, 10*time.Second)
-		s.gracefullyShutdownWaitGroup.Done()
-		return
+		return ErrNoAvailableRunner
 	}
 
 	// Get Runner from the pool
@@ -108,10 +80,18 @@ func (s *service) loopRoutine(ctx context.Context) {
 		}
 		timeutil.SleepWithContext(ctx, 10*time.Second)
 		s.gracefullyShutdownWaitGroup.Done()
-		return
+		return err
 	}
 
-	go s.runTask(ctx, runner, *task)
+	go s.runTask(ctx, runner, task)
+	return nil
+}
+
+func (s *service) GracefullyShutdown() {
+	logrus.Info("[TaskRunner Manager] Gracefully Shutting down signal received")
+	s.cancelFunc()
+	s.gracefullyShutdownWaitGroup.Wait()
+	logrus.Info("[TaskRunner Manager] Gracefully Shutdown success.")
 }
 
 func (s *service) runTask(ctx context.Context, runner taskrunner.Runner, task model.Task) {
@@ -166,16 +146,6 @@ func (s *service) OnEvent(e taskrunner.PoolEvent) {
 		logrus.Debugf("[TaskRunner Manager] Ignoring the TaskRunnerPool event due to context error (%s)", s.ctx.Err())
 		return
 	}
-	s.loopRoutine(s.ctx)
-}
 
-func (s *service) PollTaskFromWorkerNode(ctx context.Context) (*model.Task, error) {
-	result, err := s.workerNodeGRPCClient.GetTaskFromQueue(ctx, &proto.GetTaskPayload{
-		ImageUrl: s.config.ImageURL,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return mapper.ConvertTaskProtoToModel(result)
+	// TODO: Notify the worker node about the runner availability.
 }
