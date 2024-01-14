@@ -23,6 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ContainerReceiverClient interface {
+	SendTasks(ctx context.Context, in *SendTasksRequest, opts ...grpc.CallOption) (*SendTasksResponse, error)
 	CancelTask(ctx context.Context, in *CancelTaskRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
@@ -32,6 +33,15 @@ type containerReceiverClient struct {
 
 func NewContainerReceiverClient(cc grpc.ClientConnInterface) ContainerReceiverClient {
 	return &containerReceiverClient{cc}
+}
+
+func (c *containerReceiverClient) SendTasks(ctx context.Context, in *SendTasksRequest, opts ...grpc.CallOption) (*SendTasksResponse, error) {
+	out := new(SendTasksResponse)
+	err := c.cc.Invoke(ctx, "/Container.ContainerReceiver/SendTasks", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *containerReceiverClient) CancelTask(ctx context.Context, in *CancelTaskRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
@@ -47,6 +57,7 @@ func (c *containerReceiverClient) CancelTask(ctx context.Context, in *CancelTask
 // All implementations must embed UnimplementedContainerReceiverServer
 // for forward compatibility
 type ContainerReceiverServer interface {
+	SendTasks(context.Context, *SendTasksRequest) (*SendTasksResponse, error)
 	CancelTask(context.Context, *CancelTaskRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedContainerReceiverServer()
 }
@@ -55,6 +66,9 @@ type ContainerReceiverServer interface {
 type UnimplementedContainerReceiverServer struct {
 }
 
+func (UnimplementedContainerReceiverServer) SendTasks(context.Context, *SendTasksRequest) (*SendTasksResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendTasks not implemented")
+}
 func (UnimplementedContainerReceiverServer) CancelTask(context.Context, *CancelTaskRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CancelTask not implemented")
 }
@@ -69,6 +83,24 @@ type UnsafeContainerReceiverServer interface {
 
 func RegisterContainerReceiverServer(s grpc.ServiceRegistrar, srv ContainerReceiverServer) {
 	s.RegisterService(&ContainerReceiver_ServiceDesc, srv)
+}
+
+func _ContainerReceiver_SendTasks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendTasksRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContainerReceiverServer).SendTasks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Container.ContainerReceiver/SendTasks",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContainerReceiverServer).SendTasks(ctx, req.(*SendTasksRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _ContainerReceiver_CancelTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -96,6 +128,10 @@ var ContainerReceiver_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "Container.ContainerReceiver",
 	HandlerType: (*ContainerReceiverServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "SendTasks",
+			Handler:    _ContainerReceiver_SendTasks_Handler,
+		},
 		{
 			MethodName: "CancelTask",
 			Handler:    _ContainerReceiver_CancelTask_Handler,

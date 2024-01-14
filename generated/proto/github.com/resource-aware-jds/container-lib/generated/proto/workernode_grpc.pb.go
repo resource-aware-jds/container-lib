@@ -25,7 +25,6 @@ const _ = grpc.SupportPackageIsVersion7
 type WorkerNodeContainerReceiverClient interface {
 	SubmitSuccessTask(ctx context.Context, in *SubmitSuccessTaskRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	ReportTaskFailure(ctx context.Context, in *ReportTaskFailureRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	GetTaskFromQueue(ctx context.Context, in *GetTaskPayload, opts ...grpc.CallOption) (*Task, error)
 }
 
 type workerNodeContainerReceiverClient struct {
@@ -54,22 +53,12 @@ func (c *workerNodeContainerReceiverClient) ReportTaskFailure(ctx context.Contex
 	return out, nil
 }
 
-func (c *workerNodeContainerReceiverClient) GetTaskFromQueue(ctx context.Context, in *GetTaskPayload, opts ...grpc.CallOption) (*Task, error) {
-	out := new(Task)
-	err := c.cc.Invoke(ctx, "/WorkerNode.WorkerNodeContainerReceiver/GetTaskFromQueue", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // WorkerNodeContainerReceiverServer is the server API for WorkerNodeContainerReceiver service.
 // All implementations must embed UnimplementedWorkerNodeContainerReceiverServer
 // for forward compatibility
 type WorkerNodeContainerReceiverServer interface {
 	SubmitSuccessTask(context.Context, *SubmitSuccessTaskRequest) (*emptypb.Empty, error)
 	ReportTaskFailure(context.Context, *ReportTaskFailureRequest) (*emptypb.Empty, error)
-	GetTaskFromQueue(context.Context, *GetTaskPayload) (*Task, error)
 	mustEmbedUnimplementedWorkerNodeContainerReceiverServer()
 }
 
@@ -82,9 +71,6 @@ func (UnimplementedWorkerNodeContainerReceiverServer) SubmitSuccessTask(context.
 }
 func (UnimplementedWorkerNodeContainerReceiverServer) ReportTaskFailure(context.Context, *ReportTaskFailureRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReportTaskFailure not implemented")
-}
-func (UnimplementedWorkerNodeContainerReceiverServer) GetTaskFromQueue(context.Context, *GetTaskPayload) (*Task, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetTaskFromQueue not implemented")
 }
 func (UnimplementedWorkerNodeContainerReceiverServer) mustEmbedUnimplementedWorkerNodeContainerReceiverServer() {
 }
@@ -136,24 +122,6 @@ func _WorkerNodeContainerReceiver_ReportTaskFailure_Handler(srv interface{}, ctx
 	return interceptor(ctx, in, info, handler)
 }
 
-func _WorkerNodeContainerReceiver_GetTaskFromQueue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetTaskPayload)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(WorkerNodeContainerReceiverServer).GetTaskFromQueue(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/WorkerNode.WorkerNodeContainerReceiver/GetTaskFromQueue",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WorkerNodeContainerReceiverServer).GetTaskFromQueue(ctx, req.(*GetTaskPayload))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // WorkerNodeContainerReceiver_ServiceDesc is the grpc.ServiceDesc for WorkerNodeContainerReceiver service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -168,10 +136,6 @@ var WorkerNodeContainerReceiver_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ReportTaskFailure",
 			Handler:    _WorkerNodeContainerReceiver_ReportTaskFailure_Handler,
-		},
-		{
-			MethodName: "GetTaskFromQueue",
-			Handler:    _WorkerNodeContainerReceiver_GetTaskFromQueue_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

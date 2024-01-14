@@ -6,7 +6,27 @@ option go_package = "github.com/resource-aware-jds/container-lib/generated/proto
 import "google/protobuf/empty.proto";
 
 service ContainerReceiver {
+  rpc SendTasks(SendTasksRequest) returns (SendTasksResponse) {}
   rpc CancelTask(CancelTaskRequest) returns (google.protobuf.Empty) {}
+}
+
+message Task {
+  string ID = 1;
+  string JobID = 2;
+  bytes TaskAttributes = 3;
+}
+
+message SendTasksRequest {
+  repeated Task tasks=1;
+}
+
+message SendTasksResponse {
+  repeated RunTaskFailureResponse failure_tasks=1;
+}
+
+message RunTaskFailureResponse {
+  string failure_task_id=1;
+  string error=2;
 }
 
 message CancelTaskRequest {
