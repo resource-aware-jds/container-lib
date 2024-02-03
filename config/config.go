@@ -12,7 +12,7 @@ import (
 type Config struct {
 	Debug                      bool   `envconfig:"DEBUG" default:"false"`
 	ProfilingToolsListeningURL string `envconfig:"PROFILING_TOOLS_LISTENING_URL" default:"[::1]:31111"`
-	ContainerGRPCListeningURL  string `envconfig:"CONTAINER_GRPC_LISTENING_URL" default:"[::1]:31236"`
+	ContainerGRPCListeningURL  string `envconfig:"CONTAINER_GRPC_LISTENING_URL" default:":31236"`
 	WorkerNodeReceiverGRPCURL  string `envconfig:"WORKER_NODE_RECEIVER_GRPC_URL" default:"host.docker.internal:31237"`
 	ImageURL                   string `envconfig:"IMAGE_URL" required:"true"`
 	InitialTaskRunner          int    `envconfig:"INITIAL_TASK_RUNNER" default:"1"`
