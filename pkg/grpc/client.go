@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -18,6 +19,7 @@ type ClientConfig struct {
 }
 
 func ProvideClient(config ClientConfig) (Client, error) {
+	logrus.Info("Debug Config - ", config.Target)
 	grpcConnection, err := grpc.Dial(
 		config.Target,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
