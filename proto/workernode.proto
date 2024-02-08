@@ -4,12 +4,17 @@ package WorkerNode;
 option go_package = "github.com/resource-aware-jds/container-lib/generated/proto";
 
 import "google/protobuf/empty.proto";
-import "common.proto";
 
 service WorkerNodeContainerReceiver {
   rpc SubmitSuccessTask(SubmitSuccessTaskRequest) returns (google.protobuf.Empty) {}
   rpc ReportTaskFailure(ReportTaskFailureRequest) returns (google.protobuf.Empty) {}
-  rpc GetTaskFromQueue(GetTaskPayload) returns (Common.Task) {}
+  rpc GetTaskFromQueue(GetTaskPayload) returns (Task) {}
+}
+
+message Task {
+  string ID = 1;
+  string JobID = 2;
+  bytes TaskAttributes = 3;
 }
 
 message GetTaskPayload {
@@ -18,7 +23,7 @@ message GetTaskPayload {
 
 message SubmitSuccessTaskRequest {
   string ID=1;
-  repeated bytes Results=2;
+  bytes Results=2;
 }
 
 message ReportTaskFailureRequest {

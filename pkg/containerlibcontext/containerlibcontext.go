@@ -9,7 +9,7 @@ type context struct {
 	ctx            stdcontext.Context
 	isSuccess      bool
 	cancelFunction func()
-	results        [][]byte
+	results        []byte
 }
 
 type Context interface {
@@ -17,7 +17,7 @@ type Context interface {
 	Success()
 	Cancel()
 	RecordResult(result []byte)
-	GetResults() [][]byte
+	GetResults() []byte
 	GetSuccessResult() bool
 }
 
@@ -28,7 +28,7 @@ func ProvideContext(ctx stdcontext.Context) Context {
 		isSuccess:      false,
 		ctx:            newCtx,
 		cancelFunction: cancelFunc,
-		results:        make([][]byte, 0),
+		results:        make([]byte, 0),
 	}
 }
 
@@ -57,10 +57,10 @@ func (c *context) Cancel() {
 }
 
 func (c *context) RecordResult(result []byte) {
-	c.results = append(c.results, result)
+	c.results = result
 }
 
-func (c *context) GetResults() [][]byte {
+func (c *context) GetResults() []byte {
 	return c.results
 }
 
