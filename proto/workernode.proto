@@ -19,6 +19,7 @@ message Task {
 
 message GetTaskPayload {
   string ImageUrl=1;
+  string ContainerId=2;
 }
 
 message SubmitSuccessTaskRequest {

@@ -171,7 +171,8 @@ func (s *service) OnEvent(e taskrunner.PoolEvent) {
 
 func (s *service) PollTaskFromWorkerNode(ctx context.Context) (*model.Task, error) {
 	result, err := s.workerNodeGRPCClient.GetTaskFromQueue(ctx, &proto.GetTaskPayload{
-		ImageUrl: s.config.ImageURL,
+		ImageUrl:    s.config.ImageURL,
+		ContainerId: s.config.ContainerId,
 	})
 	if err != nil {
 		return nil, err

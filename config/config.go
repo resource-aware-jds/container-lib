@@ -7,6 +7,7 @@ import (
 	"github.com/resource-aware-jds/container-lib/pkg/taskrunner"
 	"github.com/sirupsen/logrus"
 	"os"
+	"os/exec"
 )
 
 type Config struct {
@@ -16,6 +17,7 @@ type Config struct {
 	WorkerNodeReceiverGRPCURL  string `envconfig:"WORKER_NODE_RECEIVER_GRPC_URL" default:"host.docker.internal:31237"`
 	ImageURL                   string `envconfig:"IMAGE_URL" required:"true"`
 	InitialTaskRunner          int    `envconfig:"INITIAL_TASK_RUNNER" default:"1"`
+	ContainerId                string
 }
 
 func ProvideConfig() (*Config, error) {
@@ -32,6 +34,7 @@ func ProvideConfig() (*Config, error) {
 
 	var config Config
 	envconfig.MustProcess("RAJDS", &config)
+	loadContainerId(&config)
 
 	return &config, nil
 }
@@ -52,4 +55,12 @@ func ProvideGRPCSocketClientConfig(config *Config) grpc.ClientConfig {
 	return grpc.ClientConfig{
 		Target: config.WorkerNodeReceiverGRPCURL,
 	}
+}
+
+func loadContainerId(config *Config) {
+	containerId, err := exec.Command("hostname").Output()
+	if err != nil {
+		logrus.Warn("[TaskRunner Manager] Fail to retrieve hostname with error (%s)", err.Error())
+	}
+	config.ContainerId = string(containerId)
 }
