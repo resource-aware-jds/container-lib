@@ -1,7 +1,8 @@
 package main
 
 import (
-	workerlib "github.com/resource-aware-jds/container-lib"
+	"errors"
+	containerlib "github.com/resource-aware-jds/container-lib"
 	"github.com/resource-aware-jds/container-lib/model"
 	"github.com/resource-aware-jds/container-lib/pkg/containerlibcontext"
 	"github.com/sirupsen/logrus"
@@ -9,7 +10,7 @@ import (
 )
 
 func main() {
-	workerlib.Run(func(ctx containerlibcontext.Context, task model.Task) error {
+	containerlib.Run(func(ctx containerlibcontext.Context, task model.Task) error {
 		count := 0
 		for {
 			select {
@@ -22,8 +23,12 @@ func main() {
 			}
 
 			if count == 20 {
+				ctx.RecordResult([]byte("Success!!"))
 				ctx.Success()
 				return nil
+			} else if count > 20 {
+				ctx.RecordResult([]byte("Error"))
+				return errors.New("example error")
 			}
 			count++
 		}
